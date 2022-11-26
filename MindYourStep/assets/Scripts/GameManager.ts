@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Prefab, CCInteger, instantiate, game, Vec3, Label } from 'cc';
+import { _decorator, Component, Node, Prefab, CCInteger, instantiate, game, Vec3, Label, EventMouse } from 'cc';
 import { PlayerController } from './PlayerController';
 const { ccclass, property } = _decorator;
 
@@ -22,13 +22,17 @@ export class GameManager extends Component {
     public roadLength: Number = 50;
     private _road: number[] = [];
     private _curState: GameState = GameState.GS_INIT;
-    private _curPos: Vec3 = new Vec3(0, 0, 5);
+    private _curPos: Vec3 = new Vec3();
     @property({ type: PlayerController })
     public playerCtrl: PlayerController = null;
     @property({ type: Node })
     public startMenu: Node = null;
     @property({ type: Label })
-    public stepsLabel: Label | null = null;
+    public stepsLabelGame: Label | null = null;
+    @property({ type: Node })
+    public gameOverMenu: Node = null;
+    @property({ type: Label })
+    public stepsLabelOver: Label | null = null;
 
     start() {
         this.curState = GameState.GS_INIT;
@@ -36,6 +40,10 @@ export class GameManager extends Component {
     }
 
     init() {
+        if (this.gameOverMenu) {
+            this.gameOverMenu.active = false;
+        }
+
         if (this.startMenu) {
             this.startMenu.active = true;
         }
@@ -58,8 +66,8 @@ export class GameManager extends Component {
                 if (this.startMenu) {
                     this.startMenu.active = false;
                 }
-                if (this.stepsLabel) {
-                    this.stepsLabel.string = '0';
+                if (this.stepsLabelGame) {
+                    this.stepsLabelGame.string = '0';
                 }
                 setTimeout(() => {
                     if (this.playerCtrl) {
@@ -68,6 +76,9 @@ export class GameManager extends Component {
                 }, 0.1);
                 break;
             case GameState.GS_END:
+                this.gameOverMenu.active = true;
+                this.stepsLabelOver.string = this.stepsLabelGame.string;
+                this.stepsLabelGame.string = '';
                 break;
         }
         this._curState = value;
@@ -75,6 +86,10 @@ export class GameManager extends Component {
 
     onStartButtonClicked() {
         this.curState = GameState.GS_PLAYING;
+    }
+
+    onPlayAgainButtonClicked() {
+        this.curState = GameState.GS_INIT;
     }
 
     generateRoad() {
@@ -96,7 +111,7 @@ export class GameManager extends Component {
             let block: Node = this.spawnBlockByType(this._road[j]);
             if (block) {
                 this.node.addChild(block);
-                block.setPosition(j, -1.5, 5);
+                block.setPosition(j, -1.5, 0);
             }
         }
     }
@@ -118,15 +133,15 @@ export class GameManager extends Component {
     checkResult(moveIndex: number) {
         if (moveIndex <= this.roadLength) {
             if (this._road[moveIndex] == BlockType.BT_NONE) {
-                this.curState = GameState.GS_INIT;
+                this.curState = GameState.GS_END;
             }
         } else {
-            this.curState = GameState.GS_INIT;
+            this.curState = GameState.GS_END;
         }
     }
 
     onPlayerJumpEnd(moveIndex: number) {
-        this.stepsLabel.string = '' + moveIndex;
+        this.stepsLabelGame.string = '' + moveIndex;
         this.checkResult(moveIndex);
     }
 
