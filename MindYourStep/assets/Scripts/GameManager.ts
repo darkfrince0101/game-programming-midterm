@@ -22,6 +22,7 @@ export class GameManager extends Component {
     public roadLength: Number = 50;
     private _road: number[] = [];
     private _curState: GameState = GameState.GS_INIT;
+    private _curPos: Vec3 = new Vec3(0, 0, 5);
     @property({ type: PlayerController })
     public playerCtrl: PlayerController = null;
     @property({ type: Node })
@@ -42,7 +43,7 @@ export class GameManager extends Component {
         this.generateRoad();
         if (this.playerCtrl) {
             this.playerCtrl.setInputActive(false);
-            this.playerCtrl.node.setPosition(Vec3.ZERO);
+            this.playerCtrl.node.setPosition(this._curPos);
         }
 
         this.playerCtrl.reset();

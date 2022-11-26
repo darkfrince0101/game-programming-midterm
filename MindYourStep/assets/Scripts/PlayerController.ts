@@ -21,7 +21,7 @@ export class PlayerController extends Component {
     public CocosAnim: SkeletalAnimation | null = null;
 
     start() {
-        //input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+        input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
     }
 
     setInputActive(active: boolean) {
